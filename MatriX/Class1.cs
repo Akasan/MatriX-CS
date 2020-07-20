@@ -4,70 +4,117 @@ using System.Collections.Generic;
 
 namespace MatriX
 {
-    public static class Matrix
+    public class Matrix
     {
-        public static Type[] intZeros1d(int size)
+        public Type[,] matrix;
+        public int height, width;
+        public Type type;
+
+        public Matrix(Type[,] matrix)
         {
-            Type[] zerosArray = new Type[size];
-            int intTemp = 0;
-            var temp = (Type)(object)intTemp;
-            
-            for (int i = 0; i < size; i++)
-            {
-                zerosArray[i] = temp;
-            }
-            return zerosArray;
+            this.matrix = matrix;
+            type = matrix[0, 0].GetType();
+            height = matrix.GetLength(0);
+            width = matrix.GetLength(1);
         }
 
-        public static Type[,] intZeros2d(int size1, int size2)
+        public Matrix transpose()
         {
-            Type[,] zerosArray = new Type[size1, size2];
+            Type[,] transposedMat = new Type[width, height];
             int i, j;
-            int intTemp = 0;
-            var temp = (Type)(object)intTemp;
-            for (i = 0; i < size1; i++)
+
+            for (i = 0; i < height; i++)
             {
-                for(j=0; j<size2; j++)
+                for (j = 0; j < width; j++)
                 {
-                    zerosArray[i, j] = temp;
+                    transposedMat[j, i] = matrix[i, j];
                 }
             }
-            return zerosArray;
+            return new Matrix(transposedMat);
         }
 
-        public static Type[,] transpose(Type[,] originalMat)
+        public int[] shape()
         {
-            Type[,] transposedMat = new Type[originalMat.GetLength(1), originalMat.GetLength(0)];
-            int i, j;
-            for(i=0; i<originalMat.GetLength(0); i++)
-            {
-                for(j=0; j<originalMat.GetLength(1); j++)
-                {
-                    transposedMat[j, i] = originalMat[i, j];
-                }
-            }
-            return transposedMat;
+            return new int[] { height, width};
         }
 
-        public static (Type[,], bool) product(Type[,] baseMatrix, Type[,] compMatrix)
+        public (Matrix, bool) dot(Matrix otherMatrix)
         {
-            
-            if (isProductEnable(baseMatrix, compMatrix))
+            if (isProductEnable(otherMatrix))
             {
-                Type[,] result = new Type[baseMatrix.GetLength(0), compMatrix.GetLength(1)];
+                Type[,] result = new Type[this.height, otherMatrix.width];
 
-                return (result, true);
+                return (new Matrix(result), true);
+
             }
             else
             {
-                return (new Type[0, 0], false); 
+                return (null, false);
             }
         }
 
-        public static bool isProductEnable(Type[,] baseMatrix, Type[,] compMatrix)
+        private bool isProductEnable(Matrix otherMatrix)
         {
-            return baseMatrix.GetLength(1) == compMatrix.GetLength(0) ? true : false;
+            return this.width == otherMatrix.height ? true : false;
         }
+
+        public Type this[uint i, uint j]
+        {
+            set { matrix[i, j] = (Type)(object)value; }
+            get { return matrix[i, j]; }
+        }
+
+        public Matrix this[int i =-1, uint j=0]
+        {
+            get {
+                Type[] item = new Type[height];
+                for(int idx=0; idx<height; idx++) {
+                    item[idx] = matrix[j, idx];
+                }
+                return MatrixHandler.valueToMatrix(item).transpose();
+            }
+        }
+
+        public Type[,] this[uint i]
+        {
+            get {
+                Type[,] result = new Type[1, width];
+                for(int idx=0; idx<width; idx++)
+                {
+                    result[0, idx] = matrix[i, idx];
+                }
+                return result;
+            }
+        }
+    }
+
+    public static class MatrixHandler
+    {
+        /// <summary>
+        /// 行ベクトル（要素は0）を返す
+        /// </summary>
+        /// <param name="size">ベクトル長</param>
+        /// <returns></returns>
+        public static Matrix intZeros1d(int size)
+        {
+            return new Matrix(new Type[1, size]);
+        }
+
+        public static Matrix intZeros2d(int size1, int size2)
+        {
+            return new Matrix(new Type[size1, size2]);
+        }
+
+        public static Matrix valueToMatrix(Type[] items)
+        {
+            Type[,] result = new Type[1, items.Length];
+            for(int i=0; i<items.Length; i++)
+            {
+                result[0, i] = items[i];
+            }
+            return new Matrix(result);
+        }
+
     }
 
     public class Class1
