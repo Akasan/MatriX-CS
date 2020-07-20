@@ -48,6 +48,26 @@ namespace MatriX
             }
             return transposedMat;
         }
+
+        public static (Type[,], bool) product(Type[,] baseMatrix, Type[,] compMatrix)
+        {
+            
+            if (isProductEnable(baseMatrix, compMatrix))
+            {
+                Type[,] result = new Type[baseMatrix.GetLength(0), compMatrix.GetLength(1)];
+
+                return (result, true);
+            }
+            else
+            {
+                return (new Type[0, 0], false); 
+            }
+        }
+
+        public static bool isProductEnable(Type[,] baseMatrix, Type[,] compMatrix)
+        {
+            return baseMatrix.GetLength(1) == compMatrix.GetLength(0) ? true : false;
+        }
     }
 
     public class Class1
