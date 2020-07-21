@@ -83,15 +83,16 @@ namespace MatriX
             {
                 double[,] result = new double[this.height, otherMatrix.width];
 
-                for (uint baseI = 0; baseI < height; baseI++)
+                for (uint baseH = 0; baseH < height; baseH++)
                 {
-                    for (uint otherJ = 0; otherJ < otherMatrix.width; otherJ++)
+                    for (uint otherW = 0; otherW < otherMatrix.width; otherW++)
                     {
                         double sum = 0.0;
                         for (uint baseJ = 0; baseJ < width; baseJ++)
                         {
-                            sum += matrix[baseI, baseJ] * otherMatrix[baseJ, otherJ];
+                            sum += matrix[baseH, baseJ] * otherMatrix[baseJ, otherW];
                         }
+                        result[baseH, otherW] = sum;
                     }
                 }
                 return (new Matrix(result), true);
@@ -418,6 +419,10 @@ namespace MatriX
             return new Matrix(result);
         }
 
+        /// <summary>
+        /// すべての要素の和を計算
+        /// </summary>
+        /// <returns></returns>
         public double sum()
         {
             double result = 0.0;
@@ -432,10 +437,17 @@ namespace MatriX
             return result;
         }
 
+        // 各行ごとの和も計算
+
         public Matrix vectorize()
         {
             Matrix vector = reshape(1, width * height);
             return vector;
+        }
+
+        public double average()
+        {
+            return sum() / (width * height);
         }
     }
 
@@ -509,6 +521,11 @@ namespace MatriX
             return new Matrix(result);
         }
 
+        /// <summary>
+        /// 任意のサイズの単位ベクトルを生成する
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public static Matrix unitVector2d(int size)
         {
             double[,] result = new double[size, size];
@@ -519,6 +536,12 @@ namespace MatriX
             return new Matrix(result);
         }
 
+        /// <summary>
+        /// ベクトルのノルムを計算する
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="normDim"></param>
+        /// <returns></returns>
         public static double norm(double[,] vector, int normDim)
         {
             double result = 0.0;
@@ -531,6 +554,12 @@ namespace MatriX
             return result;
         }
         
+        /// <summary>
+        /// 行列を水平方向に結合する
+        /// </summary>
+        /// <param name="matrix1"></param>
+        /// <param name="matrix2"></param>
+        /// <returns></returns>
         public static Matrix hstack(Matrix matrix1, Matrix matrix2)
         {
             if(matrix1.height != matrix2.height)
@@ -560,6 +589,12 @@ namespace MatriX
             return new Matrix(result);
         }
 
+        /// <summary>
+        /// 行列を垂直方向に結合する
+        /// </summary>
+        /// <param name="matrix1"></param>
+        /// <param name="matrix2"></param>
+        /// <returns></returns>
         public static Matrix vstack(Matrix matrix1, Matrix matrix2)
         {
             if (matrix1.width != matrix2.width)
@@ -588,5 +623,22 @@ namespace MatriX
 
             return new Matrix(result);
         }
+
+        public static Matrix arange(double start, double end, double interval)
+        {
+            double[,] result = new double[1, (int)((end-start)/interval) + 1];
+
+            for(int i=0; i<result.GetLength(1); i++)
+            {
+                result[0, i] = start + interval * i;
+            }
+
+            return new Matrix(result);
+        }
+
+        /*public static Matrix random(int size1, int size2 = -1)
+        {
+
+        }*/
     }
 }
