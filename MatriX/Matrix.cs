@@ -10,53 +10,53 @@ namespace MatriX
         /// <summary>
         /// double型の二次元配列（行、列ベクトルは内部では二次元として扱う）
         /// </summary>
-        public double[,] matrix;
+        public double[,] Mat;
 
         /// <summary>
         /// 行列の行数
         /// </summary>
-        public int height;
+        public int Height;
 
         /// <summary>
         /// 行列の列数
         /// </summary>
-        public int width;
+        public int Width;
 
         public Matrix(double[,] matrix)
         {
-            this.matrix = matrix;
-            height = matrix.GetLength(0);
-            width = matrix.GetLength(1);
+            this.Mat = matrix;
+            Height = matrix.GetLength(0);
+            Width = matrix.GetLength(1);
         }
 
         public Matrix(Matrix matrix)
         {
-            this.matrix = matrix.matrix;
-            this.height = matrix.height;
-            this.width = matrix.width;
+            this.Mat = matrix.Mat;
+            this.Height = matrix.Height;
+            this.Width = matrix.Width;
         }
 
         public Matrix(int height, int width)
         {
-            this.matrix = MatrixUtility.zeros2d(height, width).matrix;
-            this.height = height;
-            this.width = width;
+            this.Mat = MatrixUtility.Zeros2d(Height, Width).Mat;
+            this.Height = Height;
+            this.Width = Width;
         }
 
         /// <summary>
         /// 転置行列を作成
         /// </summary>
         /// <returns></returns>
-        public Matrix transpose()
+        public Matrix Transpose()
         {
-            double[,] transposedMat = new double[width, height];
+            double[,] transposedMat = new double[Width, Height];
             int i, j;
 
-            for (i = 0; i < height; i++)
+            for (i = 0; i < Height; i++)
             {
-                for (j = 0; j < width; j++)
+                for (j = 0; j < Width; j++)
                 {
-                    transposedMat[j, i] = matrix[i, j];
+                    transposedMat[j, i] = Mat[i, j];
                 }
             }
             return new Matrix(transposedMat);
@@ -66,9 +66,9 @@ namespace MatriX
         /// 行列の行数、列数を取得
         /// </summary>
         /// <returns></returns>
-        public int[] shape()
+        public int[] Shape()
         {
-            return new int[] { height, width };
+            return new int[] { Height, Width };
         }
 
         /// <summary>
@@ -76,30 +76,32 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix"></param>
         /// <returns></returns>
-        public (Matrix, bool) dot(Matrix otherMatrix)
+        public Matrix Dot(Matrix otherMatrix)
         {
             // 列ベクトルと行ベクトル同士の演算に書き換える
-            if (isProductEnable(otherMatrix))
+            if (IsProductEnable(otherMatrix))
             {
-                double[,] result = new double[this.height, otherMatrix.width];
+                double[,] result = new double[this.Height, otherMatrix.Width];
+                int baseH, otherW, baseJ;
+                double sum;
 
-                for (int baseH = 0; baseH < height; baseH++)
+                for (baseH = 0; baseH < Height; baseH++)
                 {
-                    for (int otherW = 0; otherW < otherMatrix.width; otherW++)
+                    for (otherW = 0; otherW < otherMatrix.Width; otherW++)
                     {
-                        double sum = 0.0;
-                        for (int baseJ = 0; baseJ < width; baseJ++)
+                        sum = 0.0;
+                        for (baseJ = 0; baseJ < Width; baseJ++)
                         {
-                            sum += matrix[baseH, baseJ] * otherMatrix[baseJ, otherW];
+                            sum += Mat[baseH, baseJ] * otherMatrix[baseJ, otherW];
                         }
                         result[baseH, otherW] = sum;
                     }
                 }
-                return (new Matrix(result), true);
+                return new Matrix(result);
             }
             else
             {
-                return (null, false);
+                return null;
             }
         }
 
@@ -108,9 +110,9 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix"></param>
         /// <returns></returns>
-        private bool isProductEnable(Matrix otherMatrix)
+        private bool IsProductEnable(Matrix otherMatrix)
         {
-            return this.width == otherMatrix.height ? true : false;
+            return this.Width == otherMatrix.Height ? true : false;
         }
 
         /// <summary>
@@ -121,25 +123,25 @@ namespace MatriX
         /// <returns></returns>
         public double this[int i, int j]
         {
-            set { matrix[i, j] = (double)(object)value; }
+            set { Mat[i, j] = (double)(object)value; }
             get {
                 Console.WriteLine("hogehoge");
-                return matrix[i, j]; }
+                return Mat[i, j]; }
         }
 
         // 以下はクラスの中身自体を変更する
         public static Matrix operator +(Matrix baseMatrix, Matrix otherMatrix)
         {
-            if (baseMatrix.isSameShape(otherMatrix))
+            if (baseMatrix.IsSameShape(otherMatrix))
             {
                 Matrix result = new Matrix(baseMatrix);
                 int i, j;
 
-                for(i=0; i< baseMatrix.height; i++)
+                for(i=0; i< baseMatrix.Height; i++)
                 {
-                    for(j=0; j< baseMatrix.width; j++)
+                    for(j=0; j< baseMatrix.Width; j++)
                     {
-                        result.matrix[i, j] += otherMatrix.matrix[i, j];
+                        result.Mat[i, j] += otherMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -155,11 +157,11 @@ namespace MatriX
             Matrix result = new Matrix(baseMatrix);
             int i, j;
 
-            for (i = 0; i < baseMatrix.height; i++)
+            for (i = 0; i < baseMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.width; j++)
+                for (j = 0; j < baseMatrix.Width; j++)
                 {
-                    result.matrix[i, j] += value;
+                    result.Mat[i, j] += value;
                 }
             }
             return result;
@@ -167,16 +169,16 @@ namespace MatriX
 
         public static Matrix operator -(Matrix baseMatrix, Matrix otherMatrix)
         {
-            if (baseMatrix.isSameShape(otherMatrix))
+            if (baseMatrix.IsSameShape(otherMatrix))
             {
                 Matrix result = new Matrix(baseMatrix);
                 int i, j;
 
-                for (i = 0; i < baseMatrix.height; i++)
+                for (i = 0; i < baseMatrix.Height; i++)
                 {
-                    for (j = 0; j < baseMatrix.width; j++)
+                    for (j = 0; j < baseMatrix.Width; j++)
                     {
-                        result.matrix[i, j] -= otherMatrix.matrix[i, j];
+                        result.Mat[i, j] -= otherMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -192,11 +194,11 @@ namespace MatriX
             Matrix result = new Matrix(baseMatrix);
             int i, j;
 
-            for (i = 0; i < baseMatrix.height; i++)
+            for (i = 0; i < baseMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.width; j++)
+                for (j = 0; j < baseMatrix.Width; j++)
                 {
-                    result.matrix[i, j] -= value;
+                    result.Mat[i, j] -= value;
                 }
             }
             return result;
@@ -204,16 +206,16 @@ namespace MatriX
 
         public static Matrix operator *(Matrix baseMatrix, Matrix otherMatrix)
         {
-            if (baseMatrix.isSameShape(otherMatrix))
+            if (baseMatrix.IsSameShape(otherMatrix))
             {
                 Matrix result = new Matrix(baseMatrix);
                 int i, j;
 
-                for (i = 0; i < baseMatrix.height; i++)
+                for (i = 0; i < baseMatrix.Height; i++)
                 {
-                    for (j = 0; j < baseMatrix.width; j++)
+                    for (j = 0; j < baseMatrix.Width; j++)
                     {
-                        result.matrix[i, j] *= otherMatrix.matrix[i, j];
+                        result.Mat[i, j] *= otherMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -229,11 +231,11 @@ namespace MatriX
             Matrix result = new Matrix(baseMatrix);
             int i, j;
 
-            for (i = 0; i < baseMatrix.height; i++)
+            for (i = 0; i < baseMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.width; j++)
+                for (j = 0; j < baseMatrix.Width; j++)
                 {
-                    result.matrix[i, j] *= value;
+                    result.Mat[i, j] *= value;
                 }
             }
             return result;
@@ -249,11 +251,11 @@ namespace MatriX
             Matrix result = new Matrix(baseMatrix);
             int i, j;
 
-            for (i = 0; i < baseMatrix.height; i++)
+            for (i = 0; i < baseMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.width; j++)
+                for (j = 0; j < baseMatrix.Width; j++)
                 {
-                    result.matrix[i, j] /= value;
+                    result.Mat[i, j] /= value;
                 }
             }
             return result;
@@ -264,9 +266,9 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix">足すマトリックス</param>
         /// <returns></returns>
-        public Matrix add(Matrix otherMatrix)
+        public Matrix Add(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(matrix);
+            Matrix result = new Matrix(Mat);
             result += otherMatrix;
             return result;
         }
@@ -276,9 +278,9 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix">引くマトリックス</param>
         /// <returns></returns>
-        public Matrix subtract(Matrix otherMatrix)
+        public Matrix Subtract(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(matrix);
+            Matrix result = new Matrix(Mat);
             result -= otherMatrix;
             return result;
         }
@@ -288,9 +290,9 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix">かけるマトリックス</param>
         /// <returns></returns>
-        public Matrix multiply(Matrix otherMatrix)
+        public Matrix Multiply(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(matrix);
+            Matrix result = new Matrix(Mat);
             result *= otherMatrix;
             return result;
         }
@@ -300,14 +302,14 @@ namespace MatriX
         /// </summary>
         /// <param name="applyFunc">適用する関数</param>
         /// <returns></returns>
-        public Matrix applyFunction(Func<double, double> applyFunc)
+        public Matrix ApplyFunction(Func<double, double> applyFunc)
         {
-            Matrix result = new Matrix(height, width);
+            Matrix result = new Matrix(Height, Width);
             int i, j;
 
-            for(i=0; i<height; i++)
+            for(i=0; i< Height; i++)
             {
-                for(j=0; j<width; j++)
+                for(j=0; j< Width; j++)
                 {
                     result[i, j] = applyFunc(result[i, j]);
                 }
@@ -320,24 +322,24 @@ namespace MatriX
         /// </summary>
         /// <param name="otherMatrix"></param>
         /// <returns></returns>
-        public bool isSameShape(Matrix otherMatrix)
+        public bool IsSameShape(Matrix otherMatrix)
         {
-            return (this.width == otherMatrix.width) && (this.height == otherMatrix.height) ? true : false;
+            return (this.Width == otherMatrix.Width) && (this.Height == otherMatrix.Height) ? true : false;
         }
 
         /// <summary>
         /// 行列の内容を表示する
         /// </summary>
-        public void describe()
+        public void Describe()
         {
             int i, j;
             Console.Write("[[");
-            for(i=0; i<height; i++)
+            for(i=0; i<Height; i++)
             {
                 Console.WriteLine("");
-                for(j=0; j<width; j++)
+                for(j=0; j<Width; j++)
                 {
-                    Console.Write($" {matrix[i, j]}");
+                    Console.Write($" {Mat[i, j]}");
                 }
                 Console.Write("]");
             }
@@ -349,9 +351,9 @@ namespace MatriX
         /// </summary>
         /// <param name="size1">新しい形状の行数</param>
         /// <param name="size2">新しい形状の列数</param>
-        public Matrix reshape(int size1, int size2)
+        public Matrix Reshape(int size1, int size2)
         {
-            if(size1*size2 != width * height)
+            if(size1*size2 != Width * Height)
             {
                 throw new ArgumentException("指定した配列サイズは有効ではありません");
             }
@@ -360,7 +362,7 @@ namespace MatriX
             
             for(int i=0; i<size1*size2; i++)
             {
-                result[i / size2, i % size2] = matrix[i / width, i % width];
+                result[i / size2, i % size2] = Mat[i / Width, i % Width];
             }
 
             return new Matrix(result);
@@ -370,14 +372,14 @@ namespace MatriX
         /// 逆行列を計算する(実装中)
         /// </summary>
         /// <returns></returns>
-        public Matrix inv()
+        public Matrix Inv()
         {
-            if(width == height)
+            if(Width == Height)
             {
                 return null;
             }
 
-            double[,] result = new double[height, width];
+            double[,] result = new double[Height, Width];
 
             return new Matrix(result);
         }
@@ -385,16 +387,16 @@ namespace MatriX
         /// <summary>
         /// すべての値の符号を+にする
         /// </summary>
-        public Matrix abs()
+        public Matrix Abs()
         {
-            double[,] result = (double[,])matrix.Clone();
+            double[,] result = (double[,])Mat.Clone();
             int i, j;
 
-            for(i=0; i<height; i++)
+            for(i=0; i<Height; i++)
             {
-                for(j=0; j<width; j++)
+                for(j=0; j<Width; j++)
                 {
-                    result[i, j] = Math.Abs(matrix[i, j]);
+                    result[i, j] = Math.Abs(Mat[i, j]);
                 }
             }
 
@@ -405,15 +407,15 @@ namespace MatriX
         /// すべての要素の和を計算
         /// </summary>
         /// <returns></returns>
-        public double sum()
+        public double Sum()
         {
             double result = 0.0;
             int i, j;
-            for(i=0; i<height; i++)
+            for(i=0; i<Height; i++)
             {
-                for(j=0; j<width; j++)
+                for(j=0; j<Width; j++)
                 {
-                    result += matrix[i, j];
+                    result += Mat[i, j];
                 }
             }
             return result;
@@ -424,12 +426,12 @@ namespace MatriX
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
-        public Matrix getRowVector(int rowIndex)
+        public Matrix GetRowVector(int rowIndex)
         {
-            double[,] result = new double[1, width];
-            for(int i=0; i<width; i++)
+            double[,] result = new double[1, Width];
+            for(int i=0; i<Width; i++)
             {
-                result[0, i] = matrix[rowIndex, i];
+                result[0, i] = Mat[rowIndex, i];
             }
             return new Matrix(result);
         }
@@ -439,12 +441,12 @@ namespace MatriX
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
-        public Matrix getColumnVector(int columnIndex)
+        public Matrix GetColumnVector(int columnIndex)
         {
-            double[,] result = new double[height, 1];
-            for (int i = 0; i < height; i++)
+            double[,] result = new double[Height, 1];
+            for (int i = 0; i < Height; i++)
             {
-                result[i, 0] = matrix[i, columnIndex];
+                result[i, 0] = Mat[i, columnIndex];
             }
             return new Matrix(result);
         }
@@ -454,26 +456,26 @@ namespace MatriX
         /// </summary>
         /// <param name="axis"></param>
         /// <returns></returns>
-        public Matrix sum(int axis = 0)
+        public Matrix Sum(int axis = 0)
         {
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                double[,] result = new double[height, 1];
-                for(int i=0; i<height; i++)
+                double[,] result = new double[Height, 1];
+                for(int i=0; i< Height; i++)
                 {
-                    Matrix temp = this.getRowVector(i);
-                    result[i, 0] = temp.sum();
+                    Matrix temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Sum();
                 }
                 return new Matrix(result);
             }
             else
             {
-                double[,] result = new double[1, width];
-                for (int i = 0; i < width; i++)
+                double[,] result = new double[1, Width];
+                for (int i = 0; i < Width; i++)
                 {
-                    Matrix temp = this.getColumnVector(i);
-                    result[0, i] = temp.sum();
+                    Matrix temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Sum();
                 }
                 return new Matrix(result);
             }
@@ -484,26 +486,26 @@ namespace MatriX
         /// </summary>
         /// <param name="axis"></param>
         /// <returns></returns>
-        public Matrix average(int axis = 0)
+        public Matrix Average(int axis = 0)
         {
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                double[,] result = new double[height, 1];
-                for (int i = 0; i < height; i++)
+                double[,] result = new double[Height, 1];
+                for (int i = 0; i < Height; i++)
                 {
-                    Matrix temp = this.getRowVector(i);
-                    result[i, 0] = temp.average();
+                    Matrix temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Average();
                 }
                 return new Matrix(result);
             }
             else
             {
-                double[,] result = new double[1, width];
-                for (int i = 0; i < width; i++)
+                double[,] result = new double[1, Width];
+                for (int i = 0; i < Width; i++)
                 {
-                    Matrix temp = this.getColumnVector(i);
-                    result[0, i] = temp.average();
+                    Matrix temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Average();
                 }
                 return new Matrix(result);
             }
@@ -513,9 +515,9 @@ namespace MatriX
         /// 一次元ベクトルに変換
         /// </summary>
         /// <returns></returns>
-        public Matrix flatten()
+        public Matrix Flatten()
         {
-            Matrix vector = reshape(1, width * height);
+            Matrix vector = Reshape(1, Width * Height);
             return vector;
         }
 
@@ -523,21 +525,21 @@ namespace MatriX
         /// 全要素の平均をとる
         /// </summary>
         /// <returns></returns>
-        public double average()
+        public double Average()
         {
-            return sum() / (width * height);
+            return Sum() / (Width * Height);
         }
 
-        public double median()
+        public double Median()
         {
             List<double> list = new List<double>();
             int length;
 
-            for (int i=0; i<height; i++)
+            for (int i=0; i<Height; i++)
             {
-                for(int j=0; j<width; j++)
+                for(int j=0; j<Width; j++)
                 {
-                    list.Add(matrix[i, j]);
+                    list.Add(Mat[i, j]);
                 }
             }
             list.Sort();
@@ -561,13 +563,13 @@ namespace MatriX
         /// </summary>
         /// <param name="size">ベクトル長</param>
         /// <returns></returns>
-        public static Matrix zeros1d(int size, bool isRowVector=true)
+        public static Matrix Zeros1d(int size, bool isRowVector=true)
         {
             
             return isRowVector ? new Matrix(new double[1, size]) : new Matrix(new double[size, 1]);
         }
 
-        public static Matrix oneValue1d(int size, double initValue, bool isRowVector=true)
+        public static Matrix OneValue1d(int size, double initValue, bool isRowVector=true)
         {
             double[,] result = isRowVector ? new double[1, size] : new double[size, 1];
             for(int i=0; i<size; i++)
@@ -584,7 +586,7 @@ namespace MatriX
             return new Matrix(result);
         }
 
-        public static Matrix fromValue1d(params double[] value)
+        public static Matrix FromValue1d(params double[] value)
         {
             double[,] result = new double[1, value.Length];
             for(int i=0; i<value.Length; i++)
@@ -594,12 +596,12 @@ namespace MatriX
             return new Matrix(result);
         }
 
-        public static Matrix zeros2d(int size1, int size2)
+        public static Matrix Zeros2d(int size1, int size2)
         {
             return new Matrix(new double[size1, size2]);
         }
 
-        public static Matrix oneValue2d(int size1, int size2, double initValue)
+        public static Matrix OneValue2d(int size1, int size2, double initValue)
         {
             double[,] result = new double[size1, size2];
             int i, j;
@@ -614,7 +616,7 @@ namespace MatriX
             return new Matrix(result);
         }
 
-        public static Matrix fromValue2d(params double[] value)
+        public static Matrix FromValue2d(params double[] value)
         {
             double[,] result = new double[1, value.Length];
             for (int i = 0; i < value.Length; i++)
@@ -629,7 +631,7 @@ namespace MatriX
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        public static Matrix unitVector2d(int size)
+        public static Matrix UnitVector2d(int size)
         {
             double[,] result = new double[size, size];
             for(int i=0; i<size; i++)
@@ -645,7 +647,7 @@ namespace MatriX
         /// <param name="vector"></param>
         /// <param name="normDim"></param>
         /// <returns></returns>
-        public static double norm(double[,] vector, int normDim)
+        public static double Norm(double[,] vector, int normDim)
         {
             double result = 0.0;
             
@@ -663,29 +665,29 @@ namespace MatriX
         /// <param name="matrix1"></param>
         /// <param name="matrix2"></param>
         /// <returns></returns>
-        public static Matrix hstack(Matrix matrix1, Matrix matrix2)
+        public static Matrix HStack(Matrix matrix1, Matrix matrix2)
         {
-            if(matrix1.height != matrix2.height)
+            if(matrix1.Height != matrix2.Height)
             {
                 throw new ArgumentException("おなじ高さのマトリックスを指定してください");
             }
 
-            double[,] result = new double[matrix1.height, matrix1.width + matrix2.width];
+            double[,] result = new double[matrix1.Height, matrix1.Width + matrix2.Width];
             int w, h;
 
-            for(w=0; w<matrix1.width; w++)
+            for(w=0; w<matrix1.Width; w++)
             {
-                for(h=0; h<matrix1.height; h++)
+                for(h=0; h<matrix1.Height; h++)
                 {
                     result[h, w] = matrix1[h, w];
                 }
             }
 
-            for (w = 0; w < matrix2.width; w++)
+            for (w = 0; w < matrix2.Width; w++)
             {
-                for (h = 0; h < matrix1.height; h++)
+                for (h = 0; h < matrix1.Height; h++)
                 {
-                    result[h, w+matrix1.width] = matrix2[h, w];
+                    result[h, w+matrix1.Width] = matrix2[h, w];
                 }
             }
 
@@ -698,37 +700,36 @@ namespace MatriX
         /// <param name="matrix1"></param>
         /// <param name="matrix2"></param>
         /// <returns></returns>
-        public static Matrix vstack(Matrix matrix1, Matrix matrix2)
+        public static Matrix VStack(Matrix matrix1, Matrix matrix2)
         {
-            if (matrix1.width != matrix2.width)
+            if (matrix1.Width != matrix2.Width)
             {
                 throw new ArgumentException("おなじ高さのマトリックスを指定してください");
             }
 
-            double[,] result = new double[matrix1.height + matrix2.height, matrix1.width];
+            double[,] result = new double[matrix1.Height + matrix2.Height, matrix1.Width];
             int w, h;
 
-            for (w = 0; w < matrix1.width; w++)
+            for (w = 0; w < matrix1.Width; w++)
             {
-                for (h = 0; h < matrix1.height; h++)
+                for (h = 0; h < matrix1.Height; h++)
                 {
                     result[h, w] = matrix1[h, w];
                 }
             }
 
-            for (w = 0; w < matrix1.width; w++)
+            for (w = 0; w < matrix1.Width; w++)
             {
-                for (h = 0; h < matrix2.height; h++)
+                for (h = 0; h < matrix2.Height; h++)
                 {
-                    result[h+matrix1.height, w] = matrix2[h, w];
+                    result[h+matrix1.Height, w] = matrix2[h, w];
                 }
             }
 
             return new Matrix(result);
         }
 
-        // 個数がおかしい
-        public static Matrix arange(double start, double end, double interval)
+        public static Matrix Arange(double start, double end, double interval)
         {
             List<double> tempList = new List<double>();
             int count = 0;
