@@ -24,28 +24,21 @@ namespace MatriX
 
         public Matrix(double[,] matrix)
         {
-            this.Mat = matrix;
+            Mat = matrix;
             Height = matrix.GetLength(0);
             Width = matrix.GetLength(1);
         }
 
-        public Matrix(Matrix matrix)
-        {
-            this.Mat = matrix.Mat;
-            this.Height = matrix.Height;
-            this.Width = matrix.Width;
-        }
-
         public Matrix(int height, int width)
         {
-            this.Mat = MatrixUtility.Zeros2d(Height, Width).Mat;
-            this.Height = Height;
-            this.Width = Width;
+            this.Mat = MatrixUtility.Zeros2d(height, width).Mat;
+            this.Height = height;
+            this.Width = width;
         }
 
         public Matrix Clone()
         {
-            return new Matrix(Mat);
+            return new Matrix((double[,])Mat.Clone());
         }
 
         /// <summary>
@@ -54,7 +47,7 @@ namespace MatriX
         /// <returns></returns>
         public Matrix Transpose()
         {
-            double[,] transposedMat = new double[Width, Height];
+            Matrix transposedMat = new Matrix(Width, Height);
             int i, j;
 
             for (i = 0; i < Height; i++)
@@ -64,7 +57,7 @@ namespace MatriX
                     transposedMat[j, i] = Mat[i, j];
                 }
             }
-            return new Matrix(transposedMat);
+            return transposedMat;
         }
 
         /// <summary>
@@ -86,7 +79,7 @@ namespace MatriX
             // 列ベクトルと行ベクトル同士の演算に書き換える
             if (IsProductEnable(otherMatrix))
             {
-                double[,] result = new double[this.Height, otherMatrix.Width];
+                Matrix result = new Matrix(this.Height, otherMatrix.Width);
                 int baseH, otherW, baseJ;
                 double sum;
 
@@ -102,7 +95,7 @@ namespace MatriX
                         result[baseH, otherW] = sum;
                     }
                 }
-                return new Matrix(result);
+                return result;
             }
             else
             {
@@ -138,7 +131,7 @@ namespace MatriX
         {
             if (baseMatrix.IsSameShape(otherMatrix))
             {
-                Matrix result = new Matrix(baseMatrix);
+                Matrix result = baseMatrix.Clone();
                 int i, j;
 
                 for(i=0; i< baseMatrix.Height; i++)
@@ -158,7 +151,7 @@ namespace MatriX
 
         public static Matrix operator +(Matrix baseMatrix, double value)
         {
-            Matrix result = new Matrix(baseMatrix);
+            Matrix result = baseMatrix.Clone();
             int i, j;
 
             for (i = 0; i < baseMatrix.Height; i++)
@@ -175,7 +168,7 @@ namespace MatriX
         {
             if (baseMatrix.IsSameShape(otherMatrix))
             {
-                Matrix result = new Matrix(baseMatrix);
+                Matrix result = baseMatrix.Clone();
                 int i, j;
 
                 for (i = 0; i < baseMatrix.Height; i++)
@@ -195,7 +188,7 @@ namespace MatriX
 
         public static Matrix operator -(Matrix baseMatrix, double value)
         {
-            Matrix result = new Matrix(baseMatrix);
+            Matrix result = baseMatrix.Clone();
             int i, j;
 
             for (i = 0; i < baseMatrix.Height; i++)
@@ -212,7 +205,7 @@ namespace MatriX
         {
             if (baseMatrix.IsSameShape(otherMatrix))
             {
-                Matrix result = new Matrix(baseMatrix);
+                Matrix result = baseMatrix.Clone();
                 int i, j;
 
                 for (i = 0; i < baseMatrix.Height; i++)
@@ -232,7 +225,7 @@ namespace MatriX
 
         public static Matrix operator *(Matrix baseMatrix, double value)
         {
-            Matrix result = new Matrix(baseMatrix);
+            Matrix result = baseMatrix.Clone();
             int i, j;
 
             for (i = 0; i < baseMatrix.Height; i++)
@@ -252,7 +245,7 @@ namespace MatriX
                 throw new DivideByZeroException("0で割ることはできません");
             }
 
-            Matrix result = new Matrix(baseMatrix);
+            Matrix result = baseMatrix.Clone();
             int i, j;
 
             for (i = 0; i < baseMatrix.Height; i++)
@@ -272,7 +265,7 @@ namespace MatriX
         /// <returns></returns>
         public Matrix Add(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(Mat);
+            Matrix result = Clone();
             result += otherMatrix;
             return result;
         }
@@ -284,7 +277,7 @@ namespace MatriX
         /// <returns></returns>
         public Matrix Subtract(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(Mat);
+            Matrix result = Clone();
             result -= otherMatrix;
             return result;
         }
@@ -296,7 +289,7 @@ namespace MatriX
         /// <returns></returns>
         public Matrix Multiply(Matrix otherMatrix)
         {
-            Matrix result = new Matrix(Mat);
+            Matrix result = Clone();
             result *= otherMatrix;
             return result;
         }
@@ -308,7 +301,7 @@ namespace MatriX
         /// <returns></returns>
         public Matrix ApplyFunction(Func<double, double> applyFunc)
         {
-            Matrix result = new Matrix(Height, Width);
+            Matrix result = Clone();
             int i, j;
 
             for(i=0; i< Height; i++)
@@ -375,6 +368,7 @@ namespace MatriX
         /// <summary>
         /// 逆行列を計算する。
         /// 実装は以下のページを参考（https://qiita.com/sekky0816/items/8c73a7ec32fd9b040127）
+        /// TODO https://docs.microsoft.com/ja-jp/archive/msdn-magazine/2012/december/csharp-matrix-decomposition#%E8%A1%8C%E5%88%97%E5%BC%8F　も参考にして組み込む
         /// </summary>
         /// <returns></returns>
         public Matrix Inv()
@@ -452,7 +446,7 @@ namespace MatriX
         /// </summary>
         public Matrix Abs()
         {
-            double[,] result = (double[,])Mat.Clone();
+            Matrix result = Clone();
             int i, j;
 
             for(i=0; i<Height; i++)
@@ -463,7 +457,7 @@ namespace MatriX
                 }
             }
 
-            return new Matrix(result);
+            return result;
         }
 
         /// <summary>
@@ -474,6 +468,7 @@ namespace MatriX
         {
             double result = 0.0;
             int i, j;
+
             for(i=0; i<Height; i++)
             {
                 for(j=0; j<Width; j++)
@@ -485,18 +480,50 @@ namespace MatriX
         }
 
         /// <summary>
+        /// 各行および列ごとの総和を計算
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <returns></returns>
+        public Matrix Sum(int axis = 0)
+        {
+            Matrix result;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new Matrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    Matrix temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Sum();
+                }
+            }
+            else
+            {
+                result = new Matrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    Matrix temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Sum();
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 指定した行ベクトルを取得
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
         public Matrix GetRowVector(int rowIndex)
         {
-            double[,] result = new double[1, Width];
+            Matrix result = new Matrix(1, Width);
+
             for(int i=0; i<Width; i++)
             {
                 result[0, i] = Mat[rowIndex, i];
             }
-            return new Matrix(result);
+            return result;
         }
 
         /// <summary>
@@ -506,82 +533,12 @@ namespace MatriX
         /// <returns></returns>
         public Matrix GetColumnVector(int columnIndex)
         {
-            double[,] result = new double[Height, 1];
+            Matrix result = new Matrix(Height, 1);
             for (int i = 0; i < Height; i++)
             {
                 result[i, 0] = Mat[i, columnIndex];
             }
-            return new Matrix(result);
-        }
-
-        /// <summary>
-        /// 各行および列ごとの総和を計算
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <returns></returns>
-        public Matrix Sum(int axis = 0)
-        {
-            // axis 0: 行方向　　1: 列方向
-            if (axis == 0)
-            {
-                double[,] result = new double[Height, 1];
-                for(int i=0; i< Height; i++)
-                {
-                    Matrix temp = this.GetRowVector(i);
-                    result[i, 0] = temp.Sum();
-                }
-                return new Matrix(result);
-            }
-            else
-            {
-                double[,] result = new double[1, Width];
-                for (int i = 0; i < Width; i++)
-                {
-                    Matrix temp = this.GetColumnVector(i);
-                    result[0, i] = temp.Sum();
-                }
-                return new Matrix(result);
-            }
-        }
-
-        /// <summary>
-        /// 各行および列ごとの平均を計算
-        /// </summary>
-        /// <param name="axis"></param>
-        /// <returns></returns>
-        public Matrix Average(int axis = 0)
-        {
-            // axis 0: 行方向　　1: 列方向
-            if (axis == 0)
-            {
-                double[,] result = new double[Height, 1];
-                for (int i = 0; i < Height; i++)
-                {
-                    Matrix temp = this.GetRowVector(i);
-                    result[i, 0] = temp.Average();
-                }
-                return new Matrix(result);
-            }
-            else
-            {
-                double[,] result = new double[1, Width];
-                for (int i = 0; i < Width; i++)
-                {
-                    Matrix temp = this.GetColumnVector(i);
-                    result[0, i] = temp.Average();
-                }
-                return new Matrix(result);
-            }
-        }
-
-        /// <summary>
-        /// 一次元ベクトルに変換
-        /// </summary>
-        /// <returns></returns>
-        public Matrix Flatten()
-        {
-            Matrix vector = Reshape(1, Width * Height);
-            return vector;
+            return result;
         }
 
         /// <summary>
@@ -593,18 +550,57 @@ namespace MatriX
             return Sum() / (Width * Height);
         }
 
+        /// <summary>
+        /// 各行および列ごとの平均を計算
+        /// </summary>
+        /// <param name="axis"></param>
+        /// <returns></returns>
+        public Matrix Average(int axis = 0)
+        {
+            Matrix result, temp;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new Matrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Average();
+                }
+            }
+            else
+            {
+                result = new Matrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Average();
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 一次元ベクトルに変換
+        /// </summary>
+        /// <returns></returns>
+        public Matrix Flatten()
+        {
+            return Reshape(1, Width * Height);
+        }
+
         public double Median()
         {
             List<double> list = new List<double>();
-            int length;
+            int length, i, j;
+            Matrix cloneFlattened = Clone().Flatten();
 
-            for (int i=0; i<Height; i++)
+            for(i=0; i<Width*Height; i++)
             {
-                for(int j=0; j<Width; j++)
-                {
-                    list.Add(Mat[i, j]);
-                }
+                list.Add(Mat[0, i]);
             }
+
             list.Sort();
             length = list.Count();
 
@@ -616,6 +612,126 @@ namespace MatriX
             {
                 return list[length / 2];
             }
+        }
+
+        public Matrix Median(int axis=0)
+        {
+            Matrix result, temp;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new Matrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Median();
+                }
+            }
+            else
+            {
+                result = new Matrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Median();
+                }
+            }
+
+            return result;
+        }
+
+        public double Std()
+        {
+            List<double> list = new List<double>();
+            int i, j;
+            double average = 0.0, std = 0.0;
+            Matrix cloneFlattened = Clone().Flatten();
+
+            for (i = 0; i < Width * Height; i++)
+            {
+                average += Mat[0, i];
+            }
+
+            average /= Width * Height;
+
+            for (i = 0; i < Width * Height; i++)
+            {
+                std += Math.Pow(Mat[0, i] - average, 2.0);
+            }
+
+            return Math.Sqrt(std / (Width * Height));
+        }
+
+        public Matrix Std(int axis = 0)
+        {
+            Matrix result, temp;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new Matrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Std();
+                }
+            }
+            else
+            {
+                result = new Matrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Std();
+                }
+            }
+
+            return result;
+        }
+
+        public Matrix Pow(double coef)
+        {
+            Matrix clone = Clone();
+            return clone.ApplyFunction(delegate(double item) { return Math.Pow(item, coef); });
+        }
+
+        public double Determinant()
+        {
+            if (Width != Height)
+            {
+                return 0.0;
+            }
+
+            Matrix result = MatrixUtility.UnitVector2d(Height);
+            Matrix clone = Clone();
+
+            int max;
+            double tmp = 0.0;
+            int i, j, k;
+
+            for (k = 0; k < Height; k++)
+            {
+                max = k;
+                for (j = k + 1; j < Height; j++)
+                {
+                    if (Math.Abs(clone[j, k]) > Math.Abs(clone[max, k]))
+                    {
+                        max = j;
+                    }
+                }
+
+                if (max != k)
+                {
+                    for (i = 0; i < Width; i++)
+                    {
+                        (clone[max, i], clone[k, i]) = (clone[k, i], clone[max, i]);
+                        (result[max, i], result[k, i]) = (result[k, i], result[max, i]);
+                    }
+                }
+
+                tmp = clone[k, k];
+            }
+
+            return tmp;
         }
     }
 
