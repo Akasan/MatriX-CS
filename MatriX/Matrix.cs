@@ -383,14 +383,14 @@ namespace MatriX
                 throw new ArgumentException("指定した配列サイズは有効ではありません");
             }
 
-            double[,] result = new double[size1, size2];
+            DMatrix result = new DMatrix(size1, size2);
             
             for(int i=0; i<size1*size2; i++)
             {
                 result[i / size2, i % size2] = Mat[i / Width, i % Width];
             }
 
-            return new DMatrix(result);
+            return result;
         }
 
         /// <summary>
