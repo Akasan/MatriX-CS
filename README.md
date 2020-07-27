@@ -14,3 +14,5 @@ I'll upgrade this library.
 - more faster
 - functions in numpy
 - multi data type's matrix (There is only DMatrix which all data's type is double so far)
+- sort function
+- calclulate determinant
