@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MatriX
 {
-    public class Matrix
+    public class DMatrix
     {
         /// <summary>
         /// double型の二次元配列（行、列ベクトルは内部では二次元として扱う）
@@ -22,32 +22,32 @@ namespace MatriX
         /// </summary>
         public int Width;
 
-        public Matrix(double[,] matrix)
+        public DMatrix(double[,] matrix)
         {
             Mat = matrix;
             Height = matrix.GetLength(0);
             Width = matrix.GetLength(1);
         }
 
-        public Matrix(int height, int width)
+        public DMatrix(int height, int width)
         {
-            this.Mat = MatrixUtility.Zeros2d(height, width).Mat;
+            this.Mat = DMatrixUtility.Zeros2d(height, width).Mat;
             this.Height = height;
             this.Width = width;
         }
 
-        public Matrix Clone()
+        public DMatrix Clone()
         {
-            return new Matrix((double[,])Mat.Clone());
+            return new DMatrix((double[,])Mat.Clone());
         }
 
         /// <summary>
         /// 転置行列を作成
         /// </summary>
         /// <returns></returns>
-        public Matrix Transpose()
+        public DMatrix Transpose()
         {
-            Matrix transposedMat = new Matrix(Width, Height);
+            DMatrix transposedMat = new DMatrix(Width, Height);
             int i, j;
 
             for (i = 0; i < Height; i++)
@@ -64,33 +64,33 @@ namespace MatriX
         /// 行列の行数、列数を取得
         /// </summary>
         /// <returns></returns>
-        public int[] Shape()
+        public (int, int) Shape()
         {
-            return new int[] { Height, Width };
+            return (Height, Width);
         }
 
         /// <summary>
         /// 行列同士のドット積を計算する
         /// </summary>
-        /// <param name="otherMatrix"></param>
+        /// <param name="otherDMatrix"></param>
         /// <returns></returns>
-        public Matrix Dot(Matrix otherMatrix)
+        public DMatrix Dot(DMatrix otherDMatrix)
         {
             // 列ベクトルと行ベクトル同士の演算に書き換える
-            if (IsProductEnable(otherMatrix))
+            if (IsProductEnable(otherDMatrix))
             {
-                Matrix result = new Matrix(this.Height, otherMatrix.Width);
+                DMatrix result = new DMatrix(this.Height, otherDMatrix.Width);
                 int baseH, otherW, baseJ;
                 double sum;
 
                 for (baseH = 0; baseH < Height; baseH++)
                 {
-                    for (otherW = 0; otherW < otherMatrix.Width; otherW++)
+                    for (otherW = 0; otherW < otherDMatrix.Width; otherW++)
                     {
                         sum = 0.0;
                         for (baseJ = 0; baseJ < Width; baseJ++)
                         {
-                            sum += Mat[baseH, baseJ] * otherMatrix[baseJ, otherW];
+                            sum += Mat[baseH, baseJ] * otherDMatrix[baseJ, otherW];
                         }
                         result[baseH, otherW] = sum;
                     }
@@ -106,11 +106,11 @@ namespace MatriX
         /// <summary>
         /// ドット積が計算可能か確認する
         /// </summary>
-        /// <param name="otherMatrix"></param>
+        /// <param name="otherDMatrix"></param>
         /// <returns></returns>
-        private bool IsProductEnable(Matrix otherMatrix)
+        private bool IsProductEnable(DMatrix otherDMatrix)
         {
-            return this.Width == otherMatrix.Height ? true : false;
+            return this.Width == otherDMatrix.Height ? true : false;
         }
 
         /// <summary>
@@ -126,19 +126,47 @@ namespace MatriX
                 return Mat[i, j]; }
         }
 
-        // 以下はクラスの中身自体を変更する
-        public static Matrix operator +(Matrix baseMatrix, Matrix otherMatrix)
+        public double? this[int i]
         {
-            if (baseMatrix.IsSameShape(otherMatrix))
+            set {
+                if(Height == 1)
+                {
+                    Mat[0, i] = (double)(object)value;
+                }
+                else if(Width == 1)
+                {
+                    Mat[i, 0] = (double)(object)value;
+                }
+                else { }
+            }
+            get {
+                if (Height == 1)
+                {
+                    return Mat[0, i];
+                }
+                else if (Width == 1)
+                {
+                    return Mat[i, 0];
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+
+        // 以下はクラスの中身自体を変更する
+        public static DMatrix operator +(DMatrix baseDMatrix, DMatrix otherDMatrix)
+        {
+            if (baseDMatrix.IsSameShape(otherDMatrix))
             {
-                Matrix result = baseMatrix.Clone();
+                DMatrix result = baseDMatrix.Clone();
                 int i, j;
 
-                for(i=0; i< baseMatrix.Height; i++)
+                for(i=0; i< baseDMatrix.Height; i++)
                 {
-                    for(j=0; j< baseMatrix.Width; j++)
+                    for(j=0; j< baseDMatrix.Width; j++)
                     {
-                        result.Mat[i, j] += otherMatrix.Mat[i, j];
+                        result.Mat[i, j] += otherDMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -149,14 +177,14 @@ namespace MatriX
             }
         }
 
-        public static Matrix operator +(Matrix baseMatrix, double value)
+        public static DMatrix operator +(DMatrix baseDMatrix, double value)
         {
-            Matrix result = baseMatrix.Clone();
+            DMatrix result = baseDMatrix.Clone();
             int i, j;
 
-            for (i = 0; i < baseMatrix.Height; i++)
+            for (i = 0; i < baseDMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.Width; j++)
+                for (j = 0; j < baseDMatrix.Width; j++)
                 {
                     result.Mat[i, j] += value;
                 }
@@ -164,18 +192,18 @@ namespace MatriX
             return result;
         }
 
-        public static Matrix operator -(Matrix baseMatrix, Matrix otherMatrix)
+        public static DMatrix operator -(DMatrix baseDMatrix, DMatrix otherDMatrix)
         {
-            if (baseMatrix.IsSameShape(otherMatrix))
+            if (baseDMatrix.IsSameShape(otherDMatrix))
             {
-                Matrix result = baseMatrix.Clone();
+                DMatrix result = baseDMatrix.Clone();
                 int i, j;
 
-                for (i = 0; i < baseMatrix.Height; i++)
+                for (i = 0; i < baseDMatrix.Height; i++)
                 {
-                    for (j = 0; j < baseMatrix.Width; j++)
+                    for (j = 0; j < baseDMatrix.Width; j++)
                     {
-                        result.Mat[i, j] -= otherMatrix.Mat[i, j];
+                        result.Mat[i, j] -= otherDMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -186,14 +214,14 @@ namespace MatriX
             }
         }
 
-        public static Matrix operator -(Matrix baseMatrix, double value)
+        public static DMatrix operator -(DMatrix baseDMatrix, double value)
         {
-            Matrix result = baseMatrix.Clone();
+            DMatrix result = baseDMatrix.Clone();
             int i, j;
 
-            for (i = 0; i < baseMatrix.Height; i++)
+            for (i = 0; i < baseDMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.Width; j++)
+                for (j = 0; j < baseDMatrix.Width; j++)
                 {
                     result.Mat[i, j] -= value;
                 }
@@ -201,18 +229,18 @@ namespace MatriX
             return result;
         }
 
-        public static Matrix operator *(Matrix baseMatrix, Matrix otherMatrix)
+        public static DMatrix operator *(DMatrix baseDMatrix, DMatrix otherDMatrix)
         {
-            if (baseMatrix.IsSameShape(otherMatrix))
+            if (baseDMatrix.IsSameShape(otherDMatrix))
             {
-                Matrix result = baseMatrix.Clone();
+                DMatrix result = baseDMatrix.Clone();
                 int i, j;
 
-                for (i = 0; i < baseMatrix.Height; i++)
+                for (i = 0; i < baseDMatrix.Height; i++)
                 {
-                    for (j = 0; j < baseMatrix.Width; j++)
+                    for (j = 0; j < baseDMatrix.Width; j++)
                     {
-                        result.Mat[i, j] *= otherMatrix.Mat[i, j];
+                        result.Mat[i, j] *= otherDMatrix.Mat[i, j];
                     }
                 }
                 return result;
@@ -223,14 +251,14 @@ namespace MatriX
             }
         }
 
-        public static Matrix operator *(Matrix baseMatrix, double value)
+        public static DMatrix operator *(DMatrix baseDMatrix, double value)
         {
-            Matrix result = baseMatrix.Clone();
+            DMatrix result = baseDMatrix.Clone();
             int i, j;
 
-            for (i = 0; i < baseMatrix.Height; i++)
+            for (i = 0; i < baseDMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.Width; j++)
+                for (j = 0; j < baseDMatrix.Width; j++)
                 {
                     result.Mat[i, j] *= value;
                 }
@@ -238,19 +266,19 @@ namespace MatriX
             return result;
         }
 
-        public static Matrix operator /(Matrix baseMatrix, double value)
+        public static DMatrix operator /(DMatrix baseDMatrix, double value)
         {
             if(value == 0.0)
             {
                 throw new DivideByZeroException("0で割ることはできません");
             }
 
-            Matrix result = baseMatrix.Clone();
+            DMatrix result = baseDMatrix.Clone();
             int i, j;
 
-            for (i = 0; i < baseMatrix.Height; i++)
+            for (i = 0; i < baseDMatrix.Height; i++)
             {
-                for (j = 0; j < baseMatrix.Width; j++)
+                for (j = 0; j < baseDMatrix.Width; j++)
                 {
                     result.Mat[i, j] /= value;
                 }
@@ -261,36 +289,36 @@ namespace MatriX
         /// <summary>
         ///  行列の要素同士を足し算した結果を返す
         /// </summary>
-        /// <param name="otherMatrix">足すマトリックス</param>
+        /// <param name="otherDMatrix">足すマトリックス</param>
         /// <returns></returns>
-        public Matrix Add(Matrix otherMatrix)
+        public DMatrix Add(DMatrix otherDMatrix)
         {
-            Matrix result = Clone();
-            result += otherMatrix;
+            DMatrix result = Clone();
+            result += otherDMatrix;
             return result;
         }
         
         /// <summary>
         ///  行列の要素同士を引き算した結果を返す
         /// </summary>
-        /// <param name="otherMatrix">引くマトリックス</param>
+        /// <param name="otherDMatrix">引くマトリックス</param>
         /// <returns></returns>
-        public Matrix Subtract(Matrix otherMatrix)
+        public DMatrix Subtract(DMatrix otherDMatrix)
         {
-            Matrix result = Clone();
-            result -= otherMatrix;
+            DMatrix result = Clone();
+            result -= otherDMatrix;
             return result;
         }
 
         /// <summary>
         ///  行列の要素同士を掛け合わせた結果を返す（ドット積はdot関数を利用してください）
         /// </summary>
-        /// <param name="otherMatrix">かけるマトリックス</param>
+        /// <param name="otherDMatrix">かけるマトリックス</param>
         /// <returns></returns>
-        public Matrix Multiply(Matrix otherMatrix)
+        public DMatrix Multiply(DMatrix otherDMatrix)
         {
-            Matrix result = Clone();
-            result *= otherMatrix;
+            DMatrix result = Clone();
+            result *= otherDMatrix;
             return result;
         }
 
@@ -299,9 +327,9 @@ namespace MatriX
         /// </summary>
         /// <param name="applyFunc">適用する関数</param>
         /// <returns></returns>
-        public Matrix ApplyFunction(Func<double, double> applyFunc)
+        public DMatrix ApplyFunction(Func<double, double> applyFunc)
         {
-            Matrix result = Clone();
+            DMatrix result = Clone();
             int i, j;
 
             for(i=0; i< Height; i++)
@@ -317,11 +345,11 @@ namespace MatriX
         /// <summary>
         /// 二つの行列が同じ形か確認する
         /// </summary>
-        /// <param name="otherMatrix"></param>
+        /// <param name="otherDMatrix"></param>
         /// <returns></returns>
-        public bool IsSameShape(Matrix otherMatrix)
+        public bool IsSameShape(DMatrix otherDMatrix)
         {
-            return (this.Width == otherMatrix.Width) && (this.Height == otherMatrix.Height) ? true : false;
+            return (this.Width == otherDMatrix.Width) && (this.Height == otherDMatrix.Height) ? true : false;
         }
 
         /// <summary>
@@ -348,7 +376,7 @@ namespace MatriX
         /// </summary>
         /// <param name="size1">新しい形状の行数</param>
         /// <param name="size2">新しい形状の列数</param>
-        public Matrix Reshape(int size1, int size2)
+        public DMatrix Reshape(int size1, int size2)
         {
             if(size1*size2 != Width * Height)
             {
@@ -362,7 +390,7 @@ namespace MatriX
                 result[i / size2, i % size2] = Mat[i / Width, i % Width];
             }
 
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
         /// <summary>
@@ -371,15 +399,15 @@ namespace MatriX
         /// TODO https://docs.microsoft.com/ja-jp/archive/msdn-magazine/2012/december/csharp-matrix-decomposition#%E8%A1%8C%E5%88%97%E5%BC%8F　も参考にして組み込む
         /// </summary>
         /// <returns></returns>
-        public Matrix Inv()
+        public DMatrix Inv()
         {
             if(Width != Height)
             {
                 return null;
             }
 
-            Matrix result = MatrixUtility.UnitVector2d(Height);
-            Matrix clone = Clone();
+            DMatrix result = DMatrixUtility.UnitVector2d(Height);
+            DMatrix clone = Clone();
 
             int max;
             double tmp;
@@ -444,9 +472,9 @@ namespace MatriX
         /// <summary>
         /// すべての値の符号を+にする
         /// </summary>
-        public Matrix Abs()
+        public DMatrix Abs()
         {
-            Matrix result = Clone();
+            DMatrix result = Clone();
             int i, j;
 
             for(i=0; i<Height; i++)
@@ -484,25 +512,25 @@ namespace MatriX
         /// </summary>
         /// <param name="axis"></param>
         /// <returns></returns>
-        public Matrix Sum(int axis = 0)
+        public DMatrix Sum(int axis = 0)
         {
-            Matrix result;
+            DMatrix result;
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                result = new Matrix(Height, 1);
+                result = new DMatrix(Height, 1);
                 for (int i = 0; i < Height; i++)
                 {
-                    Matrix temp = this.GetRowVector(i);
+                    DMatrix temp = this.GetRowVector(i);
                     result[i, 0] = temp.Sum();
                 }
             }
             else
             {
-                result = new Matrix(1, Width);
+                result = new DMatrix(1, Width);
                 for (int i = 0; i < Width; i++)
                 {
-                    Matrix temp = this.GetColumnVector(i);
+                    DMatrix temp = this.GetColumnVector(i);
                     result[0, i] = temp.Sum();
                 }
             }
@@ -515,9 +543,9 @@ namespace MatriX
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
-        public Matrix GetRowVector(int rowIndex)
+        public DMatrix GetRowVector(int rowIndex)
         {
-            Matrix result = new Matrix(1, Width);
+            DMatrix result = new DMatrix(1, Width);
 
             for(int i=0; i<Width; i++)
             {
@@ -531,9 +559,9 @@ namespace MatriX
         /// </summary>
         /// <param name="rowIndex"></param>
         /// <returns></returns>
-        public Matrix GetColumnVector(int columnIndex)
+        public DMatrix GetColumnVector(int columnIndex)
         {
-            Matrix result = new Matrix(Height, 1);
+            DMatrix result = new DMatrix(Height, 1);
             for (int i = 0; i < Height; i++)
             {
                 result[i, 0] = Mat[i, columnIndex];
@@ -555,13 +583,13 @@ namespace MatriX
         /// </summary>
         /// <param name="axis"></param>
         /// <returns></returns>
-        public Matrix Average(int axis = 0)
+        public DMatrix Average(int axis = 0)
         {
-            Matrix result, temp;
+            DMatrix result, temp;
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                result = new Matrix(Height, 1);
+                result = new DMatrix(Height, 1);
                 for (int i = 0; i < Height; i++)
                 {
                     temp = this.GetRowVector(i);
@@ -570,7 +598,7 @@ namespace MatriX
             }
             else
             {
-                result = new Matrix(1, Width);
+                result = new DMatrix(1, Width);
                 for (int i = 0; i < Width; i++)
                 {
                     temp = this.GetColumnVector(i);
@@ -585,7 +613,7 @@ namespace MatriX
         /// 一次元ベクトルに変換
         /// </summary>
         /// <returns></returns>
-        public Matrix Flatten()
+        public DMatrix Flatten()
         {
             return Reshape(1, Width * Height);
         }
@@ -594,7 +622,7 @@ namespace MatriX
         {
             List<double> list = new List<double>();
             int length, i, j;
-            Matrix cloneFlattened = Clone().Flatten();
+            DMatrix cloneFlattened = Clone().Flatten();
 
             for(i=0; i<Width*Height; i++)
             {
@@ -614,13 +642,13 @@ namespace MatriX
             }
         }
 
-        public Matrix Median(int axis=0)
+        public DMatrix Median(int axis=0)
         {
-            Matrix result, temp;
+            DMatrix result, temp;
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                result = new Matrix(Height, 1);
+                result = new DMatrix(Height, 1);
                 for (int i = 0; i < Height; i++)
                 {
                     temp = this.GetRowVector(i);
@@ -629,7 +657,7 @@ namespace MatriX
             }
             else
             {
-                result = new Matrix(1, Width);
+                result = new DMatrix(1, Width);
                 for (int i = 0; i < Width; i++)
                 {
                     temp = this.GetColumnVector(i);
@@ -645,7 +673,7 @@ namespace MatriX
             List<double> list = new List<double>();
             int i, j;
             double average = 0.0, std = 0.0;
-            Matrix cloneFlattened = Clone().Flatten();
+            DMatrix cloneFlattened = Clone().Flatten();
 
             for (i = 0; i < Width * Height; i++)
             {
@@ -662,13 +690,13 @@ namespace MatriX
             return Math.Sqrt(std / (Width * Height));
         }
 
-        public Matrix Std(int axis = 0)
+        public DMatrix Std(int axis = 0)
         {
-            Matrix result, temp;
+            DMatrix result, temp;
             // axis 0: 行方向　　1: 列方向
             if (axis == 0)
             {
-                result = new Matrix(Height, 1);
+                result = new DMatrix(Height, 1);
                 for (int i = 0; i < Height; i++)
                 {
                     temp = this.GetRowVector(i);
@@ -677,7 +705,7 @@ namespace MatriX
             }
             else
             {
-                result = new Matrix(1, Width);
+                result = new DMatrix(1, Width);
                 for (int i = 0; i < Width; i++)
                 {
                     temp = this.GetColumnVector(i);
@@ -688,9 +716,9 @@ namespace MatriX
             return result;
         }
 
-        public Matrix Pow(double coef)
+        public DMatrix Pow(double coef)
         {
-            Matrix clone = Clone();
+            DMatrix clone = Clone();
             return clone.ApplyFunction(delegate(double item) { return Math.Pow(item, coef); });
         }
 
@@ -701,8 +729,8 @@ namespace MatriX
                 return 0.0;
             }
 
-            Matrix result = MatrixUtility.UnitVector2d(Height);
-            Matrix clone = Clone();
+            DMatrix result = DMatrixUtility.UnitVector2d(Height);
+            DMatrix clone = Clone();
 
             int max;
             double tmp = 0.0;
@@ -733,22 +761,27 @@ namespace MatriX
 
             return tmp;
         }
+
+        public DMatrix Sqrt()
+        {
+            return Clone().Pow(0.5);
+        }
     }
 
-    public static class MatrixUtility
+    public static class DMatrixUtility
     {
         /// <summary>
         /// 行ベクトル（要素は0）を返す
         /// </summary>
         /// <param name="size">ベクトル長</param>
         /// <returns></returns>
-        public static Matrix Zeros1d(int size, bool isRowVector=true)
+        public static DMatrix Zeros1d(int size, bool isRowVector=true)
         {
             
-            return isRowVector ? new Matrix(new double[1, size]) : new Matrix(new double[size, 1]);
+            return isRowVector ? new DMatrix(new double[1, size]) : new DMatrix(new double[size, 1]);
         }
 
-        public static Matrix OneValue1d(int size, double initValue, bool isRowVector=true)
+        public static DMatrix OneValue1d(int size, double initValue, bool isRowVector=true)
         {
             double[,] result = isRowVector ? new double[1, size] : new double[size, 1];
             for(int i=0; i<size; i++)
@@ -762,25 +795,25 @@ namespace MatriX
                     result[i, 0] = initValue;
                 }
             }
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
-        public static Matrix FromValue1d(params double[] value)
+        public static DMatrix FromValue1d(params double[] value)
         {
             double[,] result = new double[1, value.Length];
             for(int i=0; i<value.Length; i++)
             {
                 result[0, i] = value[i];
             }
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
-        public static Matrix Zeros2d(int size1, int size2)
+        public static DMatrix Zeros2d(int size1, int size2)
         {
-            return new Matrix(new double[size1, size2]);
+            return new DMatrix(new double[size1, size2]);
         }
 
-        public static Matrix OneValue2d(int size1, int size2, double initValue)
+        public static DMatrix OneValue2d(int size1, int size2, double initValue)
         {
             double[,] result = new double[size1, size2];
             int i, j;
@@ -792,17 +825,17 @@ namespace MatriX
                 }
             }
 
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
-        public static Matrix FromValue2d(params double[] value)
+        public static DMatrix FromValue2d(params double[] value)
         {
             double[,] result = new double[1, value.Length];
             for (int i = 0; i < value.Length; i++)
             {
                 result[0, i] = value[i];
             }
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
         /// <summary>
@@ -810,14 +843,14 @@ namespace MatriX
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        public static Matrix UnitVector2d(int size)
+        public static DMatrix UnitVector2d(int size)
         {
             double[,] result = new double[size, size];
             for(int i=0; i<size; i++)
             {
                 result[i, i] = 1.0;
             }
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
         /// <summary>
@@ -844,7 +877,7 @@ namespace MatriX
         /// <param name="matrix1"></param>
         /// <param name="matrix2"></param>
         /// <returns></returns>
-        public static Matrix HStack(Matrix matrix1, Matrix matrix2)
+        public static DMatrix HStack(DMatrix matrix1, DMatrix matrix2)
         {
             if(matrix1.Height != matrix2.Height)
             {
@@ -870,7 +903,7 @@ namespace MatriX
                 }
             }
 
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
         /// <summary>
@@ -879,7 +912,7 @@ namespace MatriX
         /// <param name="matrix1"></param>
         /// <param name="matrix2"></param>
         /// <returns></returns>
-        public static Matrix VStack(Matrix matrix1, Matrix matrix2)
+        public static DMatrix VStack(DMatrix matrix1, DMatrix matrix2)
         {
             if (matrix1.Width != matrix2.Width)
             {
@@ -905,10 +938,10 @@ namespace MatriX
                 }
             }
 
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
-        public static Matrix Arange(double start, double end, double interval)
+        public static DMatrix Arange(double start, double end, double interval)
         {
             List<double> tempList = new List<double>();
             int count = 0;
@@ -931,10 +964,10 @@ namespace MatriX
             {
                 result[0, i] = tempList[i];
             }
-            return new Matrix(result);
+            return new DMatrix(result);
         }
 
-        /*public static Matrix random(int size1, int size2 = -1)
+        /*public static DMatrix random(int size1, int size2 = -1)
         {
 
         }*/
