@@ -433,6 +433,16 @@ namespace MatriX
                 }
             }
 
+            for(j=0; j<Height; j++)
+            {
+                for (i = 0; i < Width; i++)
+                {
+                    if(double.IsNaN(result[j, i]))
+                    {
+                        return null;
+                    }
+                }
+            }
 
             return result;
         }
