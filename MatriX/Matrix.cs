@@ -43,6 +43,11 @@ namespace MatriX
             this.Width = Width;
         }
 
+        public Matrix Clone()
+        {
+            return new Matrix(Mat);
+        }
+
         /// <summary>
         /// 転置行列を作成
         /// </summary>
@@ -125,7 +130,6 @@ namespace MatriX
         {
             set { Mat[i, j] = (double)(object)value; }
             get {
-                Console.WriteLine("hogehoge");
                 return Mat[i, j]; }
         }
 
@@ -369,19 +373,68 @@ namespace MatriX
         }
 
         /// <summary>
-        /// 逆行列を計算する(実装中)
+        /// 逆行列を計算する。
+        /// 実装は以下のページを参考（https://qiita.com/sekky0816/items/8c73a7ec32fd9b040127）
         /// </summary>
         /// <returns></returns>
         public Matrix Inv()
         {
-            if(Width == Height)
+            if(Width != Height)
             {
                 return null;
             }
 
-            double[,] result = new double[Height, Width];
+            Matrix result = MatrixUtility.UnitVector2d(Height);
+            Matrix clone = Clone();
 
-            return new Matrix(result);
+            int max;
+            double tmp;
+            int i, j, k;
+
+            for(k=0; k<Height; k++)
+            {
+                max = k;
+                for(j=k+1; j<Height; j++)
+                {
+                    if(Math.Abs(clone[j, k]) > Math.Abs(clone[max, k]))
+                    {
+                        max = j;
+                    }
+                }
+
+                if(max != k)
+                {
+                    for(i=0; i<Width; i++)
+                    {
+                        (clone[max, i], clone[k, i]) = (clone[k, i], clone[max, i]);
+                        (result[max, i], result[k, i]) = (result[k, i], result[max, i]);
+                    }
+                }
+
+                tmp = clone[k, k];
+
+                for (i=0; i< Width; i++)
+                {
+                    clone[k, i] /= tmp;
+                    result[k, i] /= tmp;
+                }
+
+                for(j=0; j<Height; j++)
+                {
+                    if(j != k)
+                    {
+                        tmp = clone[j, k] / clone[k, k];
+                        for (i = 0; i< Width; i++)
+                        {
+                            clone[j, i] -= clone[k, i] * tmp;
+                            result[j, i] -= result[k, i] * tmp;
+                        }
+                    }
+                }
+            }
+
+
+            return result;
         }
 
         /// <summary>
