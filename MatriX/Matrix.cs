@@ -50,12 +50,9 @@ namespace MatriX
             DMatrix transposedMat = new DMatrix(Width, Height);
             int i, j;
 
-            for (i = 0; i < Height; i++)
+            foreach((int, int) indexPair in GetIndexPair())
             {
-                for (j = 0; j < Width; j++)
-                {
-                    transposedMat[j, i] = Mat[i, j];
-                }
+                transposedMat[indexPair.Item1, indexPair.Item2] = Mat[indexPair.Item2, indexPair.Item1];
             }
             return transposedMat;
         }
@@ -758,13 +755,111 @@ namespace MatriX
 
                 tmp = clone[k, k];
             }
-
             return tmp;
         }
 
         public DMatrix Sqrt()
         {
             return Clone().Pow(0.5);
+        }
+
+        public double Max()
+        {
+            double result = 0.0;
+            int i, j;
+
+            for(j=0; j<Height; j++)
+            {
+                for(i=0; i<Width; i++)
+                {
+                    if(result < Mat[j, i])
+                    {
+                        result = Mat[j, i];
+                    }
+                }
+            }
+            return result;
+        }
+
+        public DMatrix Max(int axis = 0)
+        {
+            DMatrix result, temp;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new DMatrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Max();
+                }
+            }
+            else
+            {
+                result = new DMatrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Max();
+                }
+            }
+            return result;
+        }
+
+        public double Min()
+        {
+            double result = 0.0;
+            int i, j;
+
+            for (j = 0; j < Height; j++)
+            {
+                for (i = 0; i < Width; i++)
+                {
+                    if ((j == 0 && i == 0) || result > Mat[j, i])
+                    {
+                        result = Mat[j, i];
+                    }
+                }
+            }
+            return result;
+        }
+
+        public DMatrix Min(int axis = 0)
+        {
+            DMatrix result, temp;
+            // axis 0: 行方向　　1: 列方向
+            if (axis == 0)
+            {
+                result = new DMatrix(Height, 1);
+                for (int i = 0; i < Height; i++)
+                {
+                    temp = this.GetRowVector(i);
+                    result[i, 0] = temp.Min();
+                }
+            }
+            else
+            {
+                result = new DMatrix(1, Width);
+                for (int i = 0; i < Width; i++)
+                {
+                    temp = this.GetColumnVector(i);
+                    result[0, i] = temp.Min();
+                }
+            }
+            return result;
+        }
+
+        public IEnumerable<(int, int)> GetIndexPair()
+        {
+            int i, j;
+
+            for(j=0; j<Height; j++)
+            {
+                for(i=0; i<Width; i++)
+                {
+                    yield return (j, i);
+                }
+            }
         }
     }
 
@@ -967,9 +1062,58 @@ namespace MatriX
             return new DMatrix(result);
         }
 
-        /*public static DMatrix random(int size1, int size2 = -1)
+        public static DMatrix Uniform1d(int size, double lower=0.0, double upper=1.0)
         {
+            DMatrix result = Zeros1d(size);
+            Random rand = new Random();
+            for(int i=0; i<size; i++)
+            {
+                result[0, i] = (upper - lower) * rand.NextDouble() + lower;
+            }
+            return result;
+        }
 
-        }*/
+        public static DMatrix Uniform2d(int size1, int size2, double lower=0.0, double upper=1.0)
+        {
+            DMatrix result = new DMatrix(size1, size2);
+            Random rand = new Random();
+            int i, j;
+
+            for(i=0; i<size1; i++)
+            {
+                for(j=0; j<size2; j++)
+                {
+                    result[i, j] = (upper - lower) * rand.NextDouble() + lower;
+                }
+            }
+            return result;
+        }
+
+        public static DMatrix RandomInt1d(int size, int lower, int upper)
+        {
+            DMatrix result = Zeros1d(size);
+            Random rand = new Random();
+            for (int i = 0; i < size; i++)
+            {
+                result[0, i] = (double)rand.Next(lower, upper);
+            }
+            return result;
+        }
+
+        public static DMatrix RandomInt2d(int size1, int size2, int lower, int upper)
+        {
+            DMatrix result = Zeros2d(size1, size2);
+            Random rand = new Random();
+            int i, j;
+
+            for (i = 0; i < size1; i++)
+            {
+                for (j = 0; j < size2; j++)
+                {
+                    result[i, j] = (double)rand.Next(lower, upper);
+                }
+            }
+            return result;
+        }
     }
 }
